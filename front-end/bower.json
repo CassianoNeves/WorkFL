@@ -1,0 +1,13 @@
+{
+  "name": "My Site",
+  "version": "0.0.0",
+  "authors": [
+    "CassianoNeves <cassianodasnevesc10@gmail.com>"
+  ],
+  "description": "My Site",
+  "main": "index.html",
+  "license": "MIT",
+  "dependencies": {
+    "angular": "~1.5.0"
+  }
+}

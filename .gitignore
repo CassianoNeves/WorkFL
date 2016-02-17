@@ -1,0 +1,5 @@
+front-end/bower_components/
+front-end/dist/
+front-end/node_modules/
+front-end/npm-debug.log
+*~
