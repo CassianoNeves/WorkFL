@@ -7,6 +7,7 @@ var open = require('gulp-open');
 var os = require('os');
 var bower = require('gulp-bower');
 var bowerFiles = require('main-bower-files');
+var inject = require('gulp-inject');
 
 var DEFAULT = 'default',
     SASS = 'sass',
@@ -41,29 +42,47 @@ var HOST = 'http://localhost:3000',
     BROWSER = os.platform() === 'linux' ? 'google-chrome' : (os.platform() === 'win32' ? 'chrome' : 'firefox');
 
 gulp.task(SASS, function () {
-  gulp.src(paths.app.sass)
+  return gulp.src(paths.app.sass)
     .pipe(sass().on('error', sass.logError))
     .pipe(gulp.dest(paths.dist.sass));
 });
 
 gulp.task(SCRIPTS, function() {
-  gulp.src(paths.app.scripts)
-    .pipe(minify())
+  return gulp.src(paths.app.scripts)
     .pipe(gulp.dest(paths.dist.scripts))
 });
 
 gulp.task(TEMPLATES, function() {
-  gulp.src(paths.app.templates)
+  return gulp.src(paths.app.templates)
     .pipe(jade())
     .pipe(gulp.dest(paths.dist.templates))
 });
 
-gulp.task(INDEX, function() {
-  gulp.src(paths.app.index)
+gulp.task(BOWER, function() {
+  return bower()
+    .pipe(gulp.dest(paths.app.bowerComponents))
+});
+
+gulp.task(VENDOR, function() {
+  return gulp.src(bowerFiles())
+    .pipe(gulp.dest(paths.dist.vendor));
+});
+
+gulp.task(INDEX, [SASS, SCRIPTS, TEMPLATES, RELOAD], function() {
+  var sources = gulp.src([
+      paths.dist.sass + '/**/*.css',
+      paths.dist.scripts + '/**/*.js',
+      paths.dist.vendor + '/**/*'
+    ], {addRootSlash: false, ignorePath: '/dist'});
+
+
+  return gulp.src(paths.app.index)
+    .pipe(inject(sources))
     .pipe(jade())
     .pipe(gulp.dest(paths.dist.index))
 });
 
+// No Linux para funcionar o reload, é preciso instalar a extensão no browser do 'LiveReload'
 gulp.task(CONNECT, function() {
   connect.server({
     root: paths.dist.index,
@@ -88,20 +107,10 @@ gulp.task(OPEN, function(){
 });
 
 gulp.task(WATCH, function() {
-  gulp.watch([paths.app.index], [INDEX, RELOAD]);
-  gulp.watch([paths.app.sass], [SASS, RELOAD]);
-  gulp.watch([paths.app.scripts], [SCRIPTS, RELOAD]);
-  gulp.watch([paths.app.templates], [TEMPLATES, RELOAD]);
+  gulp.watch([paths.app.index], [INDEX]);
+  gulp.watch([paths.app.sass], [INDEX]);
+  gulp.watch([paths.app.scripts], [INDEX]);
+  gulp.watch([paths.app.templates], [INDEX]);
 });
 
-gulp.task(BOWER, function() {
-  return bower()
-    .pipe(gulp.dest(paths.app.bowerComponents))
-});
-
-gulp.task(VENDOR, function() {
-  return gulp.src(bowerFiles())
-    .pipe(gulp.dest(paths.dist.vendor));
-});
-
-gulp.task(DEFAULT, [INDEX, SASS, SCRIPTS, TEMPLATES, CONNECT, WATCH, OPEN, BOWER, VENDOR]);
+gulp.task(DEFAULT, [BOWER, VENDOR, CONNECT, OPEN, INDEX, WATCH]);
