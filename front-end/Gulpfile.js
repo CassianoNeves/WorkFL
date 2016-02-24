@@ -8,6 +8,7 @@ var os = require('os');
 var bower = require('gulp-bower');
 var bowerFiles = require('main-bower-files');
 var inject = require('gulp-inject');
+var watch = require('gulp-watch');
 
 var DEFAULT = 'default',
     SASS = 'sass',
@@ -68,7 +69,7 @@ gulp.task(VENDOR, function() {
     .pipe(gulp.dest(paths.dist.vendor));
 });
 
-gulp.task(INDEX, [SASS, SCRIPTS, TEMPLATES, RELOAD], function() {
+gulp.task(INDEX, [SASS, SCRIPTS, TEMPLATES], function() {
   var sources = gulp.src([
       paths.dist.sass + '/**/*.css',
       paths.dist.scripts + '/**/*.js',
@@ -91,9 +92,9 @@ gulp.task(CONNECT, function() {
   });
 });
 
-gulp.task(RELOAD, function() {
+gulp.task(RELOAD, [INDEX], function() {
   gulp.src(paths.app.index)
-    .pipe(connect.reload())
+    .pipe(connect.reload());
 });
 
 gulp.task(OPEN, function(){
@@ -107,10 +108,15 @@ gulp.task(OPEN, function(){
 });
 
 gulp.task(WATCH, function() {
-  gulp.watch([paths.app.index], [INDEX]);
-  gulp.watch([paths.app.sass], [INDEX]);
-  gulp.watch([paths.app.scripts], [INDEX]);
-  gulp.watch([paths.app.templates], [INDEX]);
+  watch([
+      paths.app.index,
+      paths.app.sass,
+      paths.app.scripts,
+      paths.app.templates
+    ],
+    function() {
+      gulp.start(RELOAD);
+    });
 });
 
 gulp.task(DEFAULT, [BOWER, VENDOR, CONNECT, OPEN, INDEX, WATCH]);

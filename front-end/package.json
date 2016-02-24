@@ -17,6 +17,7 @@
     "gulp-minify": "0.0.5",
     "gulp-open": "^1.0.0",
     "gulp-sass": "^2.1.1",
+    "gulp-watch": "^4.3.5",
     "main-bower-files": "^2.11.1"
   }
 }
